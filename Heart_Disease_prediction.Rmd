@@ -1,0 +1,491 @@
+---
+title: "Heart_Disease"
+author: "Imen Ayadi,Hazem Chlagou,Khalil Abdessalem, Oussema Ben Neji,Chaima Souissi "
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data Loading
+```{r}
+df <- read.csv("C:/Users/USER/Documents/BA/Statistics/Data Mining/DM_prject/Heart_Disease_Prediction.csv",sep = ",", dec = ".")
+
+```
+
+```{r}
+View(df)
+```
+
+## Data Description
+ accurately predict the presence of heart disease in patients based on their medical data. The model will be trained using a data set of patient records and will be able to classify patients as having or not having heart disease.
+
+ Context: Heart disease is a significant public health problem worldwide and is a leading cause of death. Early detection and prevention of heart disease can help reduce the risk of heart attack, stroke, and other cardiovascular events. The use of predictive models can aid in the early detection of heart disease and facilitate more effective treatments and interventions.
+
+ Problematic: Despite advances in medical technology and treatments, heart disease remains a significant health problem globally. One of the key challenges in detecting heart disease is the ability to accurately predict its presence based on patient data. The use of predictive models can help improve the accuracy of detection and facilitate earlier intervention, but the development of an accurate model requires the identification of the most relevant features that contribute to the presence of heart disease. This project aims to address this challenge by developing a predictive model that can accurately predict the presence of heart disease in patients based on their medical data
+
+## Description of the Data Set:
+The Heart Disease Prediction data set is a publicly available data set downloaded from Kaggle, a platform for data science and machine learning enthusiasts. The dataset contains a total of 14 attributes and 270 records of patients, with each patient represented by a row and each attribute represented by a column. The variables in the data set include:
+
+Age: The age of the patient in years
+Sex: The sex of the patient (1 = male; 0 = female)
+Chest Pain Type: The type of chest pain experienced by the patient (1 = typical angina, 2 =                             atypical angina, 3 = non-anginal pain, 4 = asymptomatic)
+Resting Blood Pressure: The resting blood pressure (in mm Hg) of the patient upon admission to the hospital
+Serum Cholesterol: The serum cholesterol (in mg/dL) of the patient
+Fasting Blood Sugar: The fasting blood sugar (in mg/dL) of the patient (1 = if fasting blood sugar                         > 120 mg/dL; 0 = otherwise)
+Resting Electrocardiographic Results: The resting electrocardiographic results (0 = normal, 1 =                        having ST-T wave abnormality, 2 = showing probable or definite left ventricular                             hypertrophy)
+Maximum Heart Rate Achieved: The maximum heart rate achieved (in beats per minute)
+
+Exercise Induced Angina: Exercise-induced angina (1 = yes; 0 = no)
+Oldpeak: ST depression induced by exercise relative to rest
+Slope: The slope of the peak exercise ST segment (1 = upsloping, 2 = flat, 3 = downsloping)
+
+Number of Major Vessels: The number of major vessels (0-3) colored by fluoroscopy
+
+Thalassemia: A blood disorder that affects the production of hemoglobin (3 = normal; 6 = fixed                 defect; 7 = reversible defect)
+
+Target: The presence of heart disease (1 = yes; 0 = no)
+
+The dataset contains a mix of categorical and continuous variables,
+and the target variable is binary, indicating the presence or absence of heart disease in each patient.
+
+```{r}
+str(df)
+```
+Heart.Disease is character it should be modified to factor.
+
+```{r}
+colnames(df) #les noms des variables 
+
+```
+
+```{r}
+#rownames(df) 
+dim(df)
+
+```
+## Descriptive statistics
+
+```{r}
+df$Heart.Disease <- as.factor(df$Heart.Disease)
+str(df)
+```
+```{r}
+summary(df)
+```
+
+## the existance of NA variable 
+
+```{r}
+#na.fail(df)
+sum(is.na(df))
+```
+## Exploratory Data Analysis
+# Descriptive statistics
+
+
+
+```{r}
+mean(df$Chest.pain.type)
+quantile(df$Chest.pain.type)
+median(df$Chest.pain.type)
+levels(df$Heart.Disease)
+```
+
+# Univariable
+
+```{r}
+library(ggplot2)
+```
+
+
+```{r}
+
+# Create histogram of Age variable
+ggplot(data = df, aes(x = Age)) + 
+  geom_histogram(binwidth = 5,col = "#1B6C61",fill="23A8DF") +
+  labs(title = "Distribution of Age", x = "Age", y = "Frequency") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+Frequency is high for individuals between 55 and 65 years old .
+
+
+
+## Bivariate Analysis
+```{r}
+# Create box plot of age and Heart Disease variable
+ggplot(data = df, aes(x = Heart.Disease, y = Age)) +
+  geom_boxplot(fill="436AA7") +
+  labs(title = "Distribution of Age by Heart Disease Diagnosis", x = "Heart Disease Diagnosis", y = "Age")
+
+```
+Age has an impact on heart diseace
+```{r}
+# Create scatter plot of age vs Cholesterol
+ggplot(data = df, aes(x = Age, y = Cholesterol)) + 
+  geom_point(col="#1B656E") +
+  labs(title = "Age vs Cholesterol", x = "Age", y = "Cholesterol")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+The older the person,the higher the chance of having a heart disease .
+
+```{r}
+k<-cor.test(df$Age, df$Cholesterol, method = "pearson")
+k
+```
+P-value= 0.0002686 < 0.05 the correlation between age and cholesterol is statistically significant. This means that there is evidence to suggest that there is a significant relationship between age and cholesterol levels.cor =0.2200563 suggest a moderate positive correlation between age and cholesterol levels.
+
+```{r}
+# Create bar plot of Chest pain type  by Sex
+
+ggplot(data = df, aes(x = Sex, fill = factor(Chest.pain.type))) +
+  geom_bar() +
+  labs(title = "Chest Pain by Sex", x = "Sex", y = "Frequency", fill = "Chest Pain Type") +
+  scale_fill_manual(values = c("#e74c3c", "#2ecc71", "#3498db", "#f1c40f"),
+                    labels = c("Typical Angina", "Atypical Angina", "Non-Anginal Pain", "Asymptomatic"))
+
+```
+
+
+We can observe that the gender has no effect on chest pain type. there is no 
+significant relationship between Sex and Chest pain type .
+
+we have two qualitative variables (sex and chest pain type ) so we can use the Chi-squared test
+
+```{r}
+cont_chest_pain_sex <- table(df$Chest.pain.type,df$Sex)
+chi_test <- chisq.test(cont_chest_pain_sex)
+chi_test
+```
+This confirms the interpretation fo the barplot , p-value = 0.3693 indicates that the observed association between chest pain type and sex could be due to random chance, and there may not be a meaningful or statistically significant relationship between these variables.
+
+```{r}
+# Create bar plot of heart disease diagnosis by sex
+#df$Sex <- as.factor(df$Sex)
+#df$Sex<-  c("F", "M")
+
+ggplot(data = df, aes(x = Sex, fill = factor(Heart.Disease))) + 
+  geom_bar() +
+  labs(title = "Heart Disease Diagnosis by Sex", x = "Sex", y = "Frequency", fill = "Heart Disease Diagnosis") +
+  scale_fill_manual(values = c("#7CAE00", "#F8766D"), name = "Heart Disease Diagnosis", labels = c("No", "Yes"))
+
+```
+```{r}
+# Create a contingency table of sex and heart disease
+Sex_Heart_Diseace <- table(df$Sex, df$Heart.Disease)
+
+# Perform the chi-squared test of independence
+chi_test <- chisq.test(Sex_Heart_Diseace)
+
+# Print the test results
+chi_test
+
+```
+P-value =1.926e-06 << 0.05  there is a statistically significant relationship between sex and the presence or absence of heart disease .
+
+```{r}
+
+
+# Create correlation matrix of variables in dataset
+cor_matrix <- cor(df[, -c(1, 14)])
+
+# Create heat map of correlation matrix
+ggplot(data = reshape2::melt(cor_matrix), aes(x = Var1, y = Var2, fill = value)) + 
+  geom_tile() +
+  scale_fill_gradient2(low = "#3498db", high = "#e74c3c", midpoint = 0, name = "Correlation") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
+  labs(title = "Correlation Matrix of Variables")
+
+```
+
+## Multivariate Data Analysis :
+
+
+```{r}
+library(FactoMineR)
+library(factoextra)
+library(Factoshiny)
+```
+
+```{r}
+pca_Heart=PCA(df,ncp = 13,scale.unit = TRUE,graph = TRUE, quali.sup = c("Heart.Disease"),quanti.sup = c(2,6,7,9,11,12,13))
+
+```
+dim1 explains 31.97% of the total variance in our data, while dim2 explains 20.08% of the total variance.
+ST depression and age contributed the most on dim 1 .  
+
+
+```{r}
+fviz_pca_ind(pca_Heart,axes = c(1,2), geom = c("points","text"),habillage=14,addEllipses = TRUE,col.ind = "cos2")
+```
+il ya un chauvochement
+
+```{r}
+
+plot(pca_Heart,choix = "var",habillage = c('contrib'))
+plotellipses(pca_Heart)
+```
+#Etude de l inertie
+
+
+```{r}
+fviz_screeplot(pca_Heart,main='Eblouis des valeurs propres')
+```
+
+
+# coude Criteria:
+
+Based on the "elbow criterion", we keep the principal components just before the bending, elbow, or drop in the scree plot. In our case , it indicates retaining the first two principal components.
+
+The first two principal components in PCA capture the most significant variation in the data. By keeping these components, we retain the majority of the information while reducing the dimensions. 
+
+```{r}
+pca_Heart$eig
+```
+# Kaiser Criterion:
+
+According to the Kaiser criterion, we retain the components for which the eigenvalues are greater than 1 (lambda > 1). In our case, we keep the first two components.
+
+The cumulative percentage of variance explained by the first two components is 52.05%.
+
+```{r}
+plot.PCA(pca_Heart,choix = "ind") #ind graphic presentation
+
+```
+
+
+
+
+```{r}
+pca_Heart$var$coord #les coordonneés des variables sur les composantes
+
+```
+ In Dim.1, Age has a positive correlation of 0.706 with the component, while Chest.pain.type has a positive correlation of 0.452. BP has a positive correlation of 0.433, Cholesterol has a positive correlation of 0.329, Max.HR has a negative correlation of -0.728, and ST.depression has a positive correlation of 0.624.
+ BP contributed the most on Dim 2
+
+#Etude des individus: scatter plot of the individuals i
+
+```{r}
+plot.PCA(pca_Heart,choix = "ind") 
+#round(pca_Heart$ind$coord,3) #the coordinates of individuals on the components
+#round(pca_Heart$ind$cos2,3)  # the quality of representation
+#round(pca_Heart$ind$contrib,3) #the contribution of individuals to the axes
+
+```
+
+## Unsupervised learning and data clustering :
+#  Hierarchical clustering
+```{r}
+library(clValid)
+```
+
+
+```{r}
+
+# Perform hierarchical clustering
+P<-df[,1: 13]
+
+distance_matrix <- dist(P)  # Compute distance matrix
+d_heart <- dist(scale(distance_matrix), method = "euclidean")
+hclust_heart <- hclust(d_heart, method = "ward.D")  # Perform hierarchical clustering
+plot(hclust_heart, hang = -1)  # Plot the dendrogram
+plot(sort(hclust_heart$height, decreasing = TRUE), type = "b", ylab = "Heights", main = "Dendogram of Hierarchical Clustering")
+
+
+```
+
+
+
+```{r}
+cl_valid=clValid(P,2:6,clMethods = c("hierarchical"),validation = "internal")
+summary(cl_valid)
+```
+
+We want to maximize the silhouette and Dun 
+Dunn is maximum for K=2
+Silhouette is maximum for K=2
+Connectivity index is minimum for K= 2
+=> This means that the data points are well-separated into two distinct clusters, and the cluster cohesion and separation are maximized at k=2 .
+
+```{r}
+classes_heart<-cutree(hclust_heart,k=2)
+#classes_heart
+table(classes_heart)
+```
+
+
+```{r}
+fviz_cluster(list(data=P,cluster=classes_heart))
+
+```
+
+
+
+```{r}
+hcpc<-HCPC(pca_Heart,nb.clust = 2)
+
+```
+
+
+```{r}
+library(dendextend)
+```
+
+
+
+## Kmeans algorithme
+
+```{r}
+km_heart<-kmeans(scale(P),centers = 2,iter.max = 10000) #nombre de  classe,eventuellement le nbr de classe
+km_heart$cluster
+km_heart$size
+cl_valid_km=clValid(P,2:10,clMethods = c("kmeans"),validation = "internal")
+summary(cl_valid_km)
+```
+
+```{r}
+fviz_cluster(km_heart,data = P)
+```
+
+```{r}
+cl_valid_3=clValid(P,2:7,clMethods = c("kmeans","hierarchical"),validation = "internal")
+summary(cl_valid_3)
+```
+for the connectivty its optimal for k=2
+for the dunn its optimal for hierarchical 
+for the silhouette its optimal for hierarchical
+=> Based on these results, it can be inferred that hierarchical clustering provided a
+more suitable and adaptable clustering solution for our dataset compared to k-means clustering. 
+
+## - Supervised learning 
+#  Logistic regression model
+
+```{r}
+library(rms)
+library(pROC)
+library(caret)
+```
+
+
+```{r}
+str(df)
+  
+# Change the levels of the factor variable
+levels(df$Heart.Disease )<- c("0", "1")
+
+# predicting if the person will have a heart disease or not using logistic regression
+
+# Split the data into training and test sets
+set.seed(123)
+S <- sample(1:nrow(df), 0.8 * nrow(df))
+train_LR <- df[S,]
+
+test_LR <- df[-S,]
+
+# Train the logistic regression model
+complete_model<- glm(Heart.Disease~ .,data = train_LR,family = binomial)
+summary(complete_model)
+model_select_train <- step(complete_model,direction = "backward")
+
+test2 <- test_LR[,-14]
+# Make predictions on the test data
+prediction1 <- predict(model_select_train, newdata = test2, type = "response")
+prediction1
+#predictions <- predict(complete_model, newdata = test2, type = "response")
+
+prediction1 <- as.numeric(prediction1>0.5) #retourne les classes des ind
+prediction1
+# Evaluate the model
+CM= table(test_LR$Heart.Disease,prediction1) #confusion matrix
+CM
+Accuracy1 = (CM[1,1]+CM[2,2])/sum(CM)
+Accuracy1
+
+#Taux mal classeés, erreur (1-Accuracy)
+prediction1!=test_LR$Heart.Disease
+MC<- sum(prediction1!=test_LR$Heart.Disease)/nrow(test_LR)
+MC
+
+```
+
+
+----
+## Decision Tree
+
+```{r}
+library(rpart)
+library(rpart.plot) # Visualize the decision tree
+```
+
+```{r}
+
+table(df$Heart.Disease)
+Decision_tree <- rpart(Heart.Disease ~ ., data = df, parms= list(prior=c(.65,.35)))
+Decision_tree
+rpart.plot(Decision_tree)
+
+```
+## Complexity of the Tree
+
+```{r}
+Comp = Decision_tree$cptable
+Comp
+```
+
+```{r}
+#we are looking for the minimal error
+which.min(Comp[,4])
+#optiaml CP with the lowest error
+CP_op = Comp[which.min(Comp[,4]),1]
+CP_op
+op_split= Comp[which.min(Comp[,4]),2] #nbre de split (divisions) optimal
+op_split
+op_tree <- rpart(Heart.Disease ~., data = df, cp=Comp, control = rpart.control(minsplit = op_split))
+rpart.plot(op_tree) #arbre optimal
+```
+##Prédiction:
+```{r}
+B2 <- sample(c(1:nrow(df)),0.8*nrow(df))
+training_tree= df[B2,]
+test_tree= df[-B2,]
+
+```
+##Fit training
+```{r}
+optimal_train_tree <- rpart(Heart.Disease ~., data = training_tree, cp=Comp, control = rpart.control(minsplit = op_split))
+test_2=test_tree[,-14]
+names(test_2)
+pred_tree=predict(optimal_train_tree, test_2, type = "prob" )
+
+pred_label_tree <- as.numeric(pred_tree[,2] > 0.5)
+pred_label_tree
+table(pred_label_tree) #predected classes
+
+```
+```{r}
+table(test_tree$Heart.Disease) #real classes
+
+```
+```{r}
+Matrix_tree = table(pred_label_tree,test_tree$Heart.Disease)
+Matrix_tree
+```
+The model correctly identified 26 instances as having a heart disease.
+The model correctly identified 15 instances as not having a heart disease.
+The model incorrectly predicted 5 instances as having  heart disease when they were actually not .
+The model incorrectly predicted 8 instances as not having a heart disease when they  actually have a heart disease.
+
+## Accuarcy of the Tree 
+```{r}
+accuracy_tree <- sum(diag(Matrix_tree)) / sum(Matrix_tree)
+accuracy_tree 
+
+```
+ This means that the model correctly predicted the outcome for 75.92% of the instances in the test data set.
+ 
+Conclusion: We have logistic regression accuracy =79.63% and decision tree Accuracy=75.93% Therefore, We will choose the logistic regression model .
